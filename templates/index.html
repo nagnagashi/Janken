@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>じゃんけんゲーム</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+    <h1>じゃんけんゲーム！！</h1>
+    <div id="choices">
+        <button data-choice="グー" class="choices-btn">
+            <img src="{{ url_for('static', filename='images/gu2.png') }}" alt="グー" />
+        </button>
+        <button data-choice="チョキ" class="choices-btn">
+            <img src="{{ url_for('static', filename='images/choki2.png') }}" alt="チョキ" />
+        </button>
+        <button data-choice="パー" class="choices-btn">
+            <img src="{{ url_for('static', filename='images/pa2.png') }}" alt="パー" />
+        </button>
+    </div>
+    <div id="result">
+        <p id="round-result"></p>
+        <p id="win-rate">勝率：0.00%</p>
+        <button id="restart-btn">もう一度遊ぶ</button>
+    </div>
+    <div id="choices-container" style="display: flex; gap: 20px;">
+        <div id="player-choice" class="choice-display"></div>
+        <div id="cpu-choice" class="choice-display"></div>
+    </div>
+    <script>
+
+        // 選択肢に応じて画像のURLを返す関数
+        // function getImageSrc(choice) {
+        //     switch (choice) {
+        //         case 'グー':
+        //             return "{{ url_for('static', filename='images/gu2.png') }}";
+        //         case 'チョキ':
+        //             return "{{ url_for('static', filename='images/choki2.png') }}";
+        //         case 'パー':
+        //             return "{{ url_for('static', filename='images/pa2.png') }}";
+        //         default:
+        //             return "";
+        //     }
+        // }
+
+        const imageMap = {
+            'グー': "{{ url_for('static', filename='images/gu2.png') }}",
+            'チョキ': "{{ url_for('static', filename='images/choki2.png') }}",
+            'パー': "{{ url_for('static', filename='images/pa2.png') }}"
+        };
+
+        function getImageSrc(choice) {
+            return imageMap[choice] || "";
+        }
+
+        let totalGames = 0;
+        let wins = 0;
+
+        // じゃんけんの選択肢
+        const choices = ['グー', 'チョキ', 'パー'];
+
+        // 勝敗判定の関数
+        function determineResult(userChoice, cpuChoice) {
+            if (userChoice === cpuChoice) {
+                return '引き分けです！';
+            } else if (
+                (userChoice === 'グー' && cpuChoice === 'チョキ') ||
+                (userChoice === 'チョキ' && cpuChoice === 'パー') ||
+                (userChoice === 'パー' && cpuChoice === 'グー')
+            ) {
+                return '勝ち';
+            } else {
+                return '負け';
+            }
+        }
+
+        // 勝率計算
+        function getWinRate() {
+            if (totalGames === 0) return '0.00%';
+            return ((wins / totalGames) * 100).toFixed(2) + '%';
+        }
+
+        // 結果表示の関数
+        function displayResult(userChoice, cpuChoice, result) {
+            // 既存の結果表示
+            document.getElementById('round-result').textContent =
+                `あなたの選択: ${userChoice} | みんなの選択: ${cpuChoice} | 結果: ${result}`;
+
+            document.getElementById('win-rate').textContent = `勝率：${getWinRate()}`;
+
+            // 自分の選択画像を設定
+            const playerDiv = document.getElementById('player-choice');
+            playerDiv.innerHTML = `<img src="${getImageSrc(userChoice)}" alt="${userChoice}" width="200" class="choice-img" />`;
+            // 色付けはCSSで自動的に適用される
+
+            // 相手の選択画像を設定
+            const cpuDiv = document.getElementById('cpu-choice');
+            cpuDiv.innerHTML = `<img src="${getImageSrc(cpuChoice)}" alt="${cpuChoice}" width="200" class="choice-img" />`;
+
+            // もう一度遊ぶボタンを表示
+            document.getElementById('restart-btn').style.display = 'inline-block';
+        }
+
+        // じゃんけんのボタンにイベントリスナーを設定
+        document.querySelectorAll('.choices-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const userChoice = btn.getAttribute('data-choice');
+                const cpuChoice = choices[Math.floor(Math.random() * choices.length)];
+                const result = determineResult(userChoice, cpuChoice);
+
+                totalGames++;
+                if (result === '勝ち') {
+                    wins++;
+                }
+                // 結果と勝率を表示
+                displayResult(userChoice, cpuChoice, result);
+            });
+        });
+
+        // もう一度遊ぶボタンのイベント設定
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            // 結果表示部分をリセット
+            document.getElementById('round-result').textContent = '';
+            // 勝率表示をリセット
+            document.getElementById('win-rate').textContent = '勝率：0.00%';
+            // もう一度遊ぶボタンを非表示に
+            document.getElementById('restart-btn').style.display = 'none';
+            // 必要に応じて勝敗カウントもリセットしたい場合は以下をコメント解除
+            // totalGames = 0;
+            // wins = 0;
+        });
+
+
+    </script>
+</body>
+
+</html>
